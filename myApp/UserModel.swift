@@ -1,14 +1,6 @@
 import Foundation
 import SwiftData
 
-let BASE_URL = "https://www.hackingwithswift.com/samples/friendface.json"
-let SORT_OPTIONS = ["Name", "Date"]
-let FILTER_OPTIONS = ["All", "Active", "Inactive"]
-
-enum FetchUserError: Error {
-	case notFound
-}
-
 @Model
 final class Friend: Identifiable, Codable, Equatable {
 	enum CodingKeys: String, CodingKey {

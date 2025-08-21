@@ -4,8 +4,9 @@ import SwiftData
 struct UserListView: View {
 	@Environment(\.modelContext) var modelContext
 	@Query var users: [User]
-	@State private var showAlert = false
-	@State private var isLoading = false
+	@State private var viewModel = ViewModel()
+	//	@State private var showAlert = false
+	//	@State private var isLoading = LoadingState.loading
 	
 	var body: some View {
 		ZStack {
@@ -31,17 +32,14 @@ struct UserListView: View {
 					}
 					.onDelete(perform: deleteItems)
 				}
-			} else if !isLoading {
+			} else if viewModel.isLoading != .loading {
 				EmptyListView()
-			}
-			
-			
-			if isLoading {
+			} else {
 				ProgressView()
 					.scaleEffect(3)
 			}
 		}
-		.alert("Something went wrong", isPresented: $showAlert) {} message: {
+		.alert("Something went wrong", isPresented: $viewModel.showAlert) {} message: {
 			Text("Please make sure you're connected to the internet or try again later.")
 		}
 		.task { await loadData() }
@@ -63,9 +61,8 @@ struct UserListView: View {
 	}
 	
 	func fetchUsers() async throws {
-		isLoading = true
 		if !users.isEmpty {
-			isLoading = false
+			viewModel.isLoading = .success
 			return
 		}
 		
@@ -81,10 +78,10 @@ struct UserListView: View {
 			for user in usersData {
 				modelContext.insert(user)
 			}
-			isLoading = false
+			viewModel.isLoading = .success
 		} catch {
-			showAlert = true
-			isLoading = false
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
 			print("Error fetching users: \(error.localizedDescription)")
 		}
 	}
@@ -93,8 +90,8 @@ struct UserListView: View {
 		do {
 			try await fetchUsers()
 		} catch {
-			showAlert = true
-			isLoading = false
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
 			print("Error loading users data: \(error.localizedDescription)")
 		}
 	}

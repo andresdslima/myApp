@@ -2,11 +2,9 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-	@Environment(\.modelContext) var modelContext
-	@Query(sort: \User.name) var users: [User]
-	//	@Query(filter: #Predicate<User> { user in
-	//		user.isActive
-	//	}, sort: \User.name) var users: [User]
+	@Query(filter: #Predicate<User> { user in
+		user.isActive
+	}, sort: \User.name) var users: [User]
 	
 	@State private var filter = FILTER_OPTIONS[0]
 	@State private var sortOrder = [
