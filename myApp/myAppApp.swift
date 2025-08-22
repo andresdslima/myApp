@@ -4,8 +4,8 @@ import SwiftData
 @main
 struct myApp: App {
 	let container: ModelContainer = {
+		let schema = Schema([User.self])
 		do {
-			let schema = Schema([User.self])
 			let container = try! ModelContainer(for: schema, configurations: [])
 			return container
 		} catch {}

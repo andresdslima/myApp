@@ -5,7 +5,7 @@ let SORT_OPTIONS = ["Name", "Date"]
 let FILTER_OPTIONS = ["All", "Active", "Inactive"]
 
 enum FetchUserError: Error {
-	case notFound
+	case notFound, invalidUrl, invalidResponse, invalidData
 }
 
 enum LoadingState {
@@ -36,10 +36,19 @@ extension UserListView {
 				return
 			}
 			
+			guard let url = URL(string: BASE_URL) else {
+				throw FetchUserError.invalidUrl
+			}
+			
 			do {
-				let url = URL(string: BASE_URL)!
-				let (data, _) = try await URLSession.shared.data(from: url)
-				let usersData = try JSONDecoder().decode([User].self, from: data)
+				let (data, response) = try await URLSession.shared.data(from: url)
+				guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+					throw FetchUserError.invalidResponse
+				}
+				
+				let decoder = JSONDecoder()
+				// decoder.keyDecodingStrategy = .convertFromSnakeCase // if needed
+				let usersData = try decoder.decode([User].self, from: data)
 				
 				if usersData.isEmpty {
 					throw FetchUserError.notFound
@@ -50,15 +59,29 @@ extension UserListView {
 				}
 				isLoading = .success
 			} catch {
-				showAlert = true
-				isLoading = .failed
-				print("Error fetching users: \(error.localizedDescription)")
+				throw FetchUserError.invalidData
 			}
 		}
 		
 		func loadData() async {
 			do {
 				try await fetchUsers()
+			} catch FetchUserError.invalidUrl {
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: invalid url")
+			} catch FetchUserError.invalidResponse {
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: invalid response")
+			} catch FetchUserError.notFound {
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: users not found")
+			} catch FetchUserError.invalidData {
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: invalid data")
 			} catch {
 				showAlert = true
 				isLoading = .failed

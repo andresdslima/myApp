@@ -33,24 +33,7 @@ struct UserListView: View {
 					.onDelete(perform: deleteItems)
 				}
 			} else if viewModel.isLoading != .loading {
-				ContentUnavailableView {
-					Text("No Users found")
-						.padding()
-				} description: {
-					Text("Your list of Users is currently empty. \n Please click on the button below to fetch Users.")
-				} actions: {
-					Button("Fetch Users") {
-						Task {
-							viewModel.isLoading = .loading
-							await loadData()
-						}
-					}
-					.foregroundColor(.white)
-					.padding()
-					.background(.blue)
-					.clipShape(.capsule)
-				}
-				.offset(y: -60)
+				EmptyUsersView(loadData: loadData)
 			}
 		}
 		.alert("Something went wrong", isPresented: $viewModel.showAlert) {} message: {
@@ -87,10 +70,19 @@ struct UserListView: View {
 			return
 		}
 		
+		guard let url = URL(string: BASE_URL) else {
+			throw FetchUserError.invalidUrl
+		}
+		
 		do {
-			let url = URL(string: BASE_URL)!
-			let (data, _) = try await URLSession.shared.data(from: url)
-			let usersData = try JSONDecoder().decode([User].self, from: data)
+			let (data, response) = try await URLSession.shared.data(from: url)
+			guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+				throw FetchUserError.invalidResponse
+			}
+			
+			let decoder = JSONDecoder()
+			// decoder.keyDecodingStrategy = .convertFromSnakeCase // if needed
+			let usersData = try decoder.decode([User].self, from: data)
 			
 			if usersData.isEmpty {
 				throw FetchUserError.notFound
@@ -101,15 +93,29 @@ struct UserListView: View {
 			}
 			viewModel.isLoading = .success
 		} catch {
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("Error fetching users: \(error.localizedDescription)")
+			throw FetchUserError.invalidData
 		}
 	}
 	
 	func loadData() async {
 		do {
 			try await fetchUsers()
+		} catch FetchUserError.invalidUrl {
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: invalid url")
+		} catch FetchUserError.invalidResponse {
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: invalid response")
+		} catch FetchUserError.notFound {
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: users not found")
+		} catch FetchUserError.invalidData {
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: invalid data")
 		} catch {
 			viewModel.showAlert = true
 			viewModel.isLoading = .failed
