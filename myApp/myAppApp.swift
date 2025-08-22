@@ -3,10 +3,19 @@ import SwiftData
 
 @main
 struct myApp: App {
-		var body: some Scene {
-				WindowGroup {
-						ContentView()
-				}
-				.modelContainer(for: User.self)
+	let container: ModelContainer = {
+		do {
+			let schema = Schema([User.self])
+			let container = try! ModelContainer(for: schema, configurations: [])
+			return container
+		} catch {}
+	}()
+	
+	var body: some Scene {
+		WindowGroup {
+			ContentView()
 		}
+		.modelContainer(for: [User.self])
+		//.modelContainer(container)
+	}
 }

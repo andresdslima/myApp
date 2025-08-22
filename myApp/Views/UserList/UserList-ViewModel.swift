@@ -12,7 +12,7 @@ enum LoadingState {
 	case loading, success, failed
 }
 
-// MARK: Example case for using MVVM architecture
+///MARK: Example case for using MVVM architecture
 extension UserListView {
 	@Observable
 	final class ViewModel {

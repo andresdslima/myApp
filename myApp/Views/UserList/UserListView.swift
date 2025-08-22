@@ -33,16 +33,37 @@ struct UserListView: View {
 					.onDelete(perform: deleteItems)
 				}
 			} else if viewModel.isLoading != .loading {
-				EmptyListView()
-			} else {
-				ProgressView()
-					.scaleEffect(3)
+				ContentUnavailableView {
+					Text("No Users found")
+						.padding()
+				} description: {
+					Text("Your list of Users is currently empty. \n Please click on the button below to fetch Users.")
+				} actions: {
+					Button("Fetch Users") {
+						Task {
+							viewModel.isLoading = .loading
+							await loadData()
+						}
+					}
+					.foregroundColor(.white)
+					.padding()
+					.background(.blue)
+					.clipShape(.capsule)
+				}
+				.offset(y: -60)
 			}
 		}
 		.alert("Something went wrong", isPresented: $viewModel.showAlert) {} message: {
 			Text("Please make sure you're connected to the internet or try again later.")
 		}
 		.task { await loadData() }
+		.overlay {
+			if viewModel.isLoading == .loading {
+				ProgressView()
+					.scaleEffect(3)
+					.offset(y: -60)
+			}
+		}
 	}
 	
 	init(

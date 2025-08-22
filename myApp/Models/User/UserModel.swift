@@ -7,7 +7,7 @@ final class Friend: Identifiable, Codable, Equatable {
 		case id, name
 	}
 	
-	var id: String
+	@Attribute(.unique) var id: String
 	var name: String
 	
 	init(id: String, name: String) {
@@ -15,7 +15,7 @@ final class Friend: Identifiable, Codable, Equatable {
 		self.name = name
 	}
 	
-	required init(from decoder: Decoder) throws {
+	init(from decoder: Decoder) throws {
 		let container = try decoder.container(keyedBy: CodingKeys.self)
 		self.id = try container.decode(String.self, forKey: .id)
 		self.name = try container.decode(String.self, forKey: .name)
@@ -38,7 +38,7 @@ final class User: Identifiable, Codable, Equatable {
 		case id, isActive, name, age, company, email, address, about, tags, friends, registered
 	}
 	
-	var id: String
+	@Attribute(.unique) var id: String
 	var isActive: Bool
 	var name: String
 	var age: Int
@@ -74,7 +74,7 @@ final class User: Identifiable, Codable, Equatable {
 		self.registered = registered
 	}
 	
-	required init(from decoder: Decoder) throws {
+	init(from decoder: Decoder) throws {
 		let container = try decoder.container(keyedBy: CodingKeys.self)
 		self.id = try container.decode(String.self, forKey: .id)
 		self.isActive = try container.decode(Bool.self, forKey: .isActive)
