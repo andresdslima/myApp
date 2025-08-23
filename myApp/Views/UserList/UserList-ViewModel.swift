@@ -40,6 +40,16 @@ extension UserListView {
 				throw FetchUserError.invalidUrl
 			}
 			
+			///MARK: Example of HTTP POST request
+			//		guard let encoded = try? JSONEncoder().encode(payload) else {
+			//			print("Failed to encode")
+			//			return
+			//		}
+			//		var request = URLRequest(url: url)
+			//		request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+			//		request.httpMethod = "POST"
+			// 		let (data, response) = try await URLSession.shared.upload(for: request, from: encoded)
+			
 			do {
 				let (data, response) = try await URLSession.shared.data(from: url)
 				guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
@@ -63,25 +73,38 @@ extension UserListView {
 			}
 		}
 		
+		func handleUserError(_ error: FetchUserError) {
+			switch error {
+			case .invalidUrl:
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: invalid url")
+			case .invalidResponse:
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: invalid response")
+			case .notFound:
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: users not found")
+			case .invalidData:
+				showAlert = true
+				isLoading = .failed
+				print("ERROR: invalid data")
+			}
+		}
+		
 		func loadData() async {
 			do {
 				try await fetchUsers()
 			} catch FetchUserError.invalidUrl {
-				showAlert = true
-				isLoading = .failed
-				print("ERROR: invalid url")
+				handleUserError(FetchUserError.invalidUrl)
 			} catch FetchUserError.invalidResponse {
-				showAlert = true
-				isLoading = .failed
-				print("ERROR: invalid response")
+				handleUserError(FetchUserError.invalidResponse)
 			} catch FetchUserError.notFound {
-				showAlert = true
-				isLoading = .failed
-				print("ERROR: users not found")
+				handleUserError(FetchUserError.notFound)
 			} catch FetchUserError.invalidData {
-				showAlert = true
-				isLoading = .failed
-				print("ERROR: invalid data")
+				handleUserError(FetchUserError.invalidData)
 			} catch {
 				showAlert = true
 				isLoading = .failed

@@ -81,7 +81,6 @@ struct UserListView: View {
 			}
 			
 			let decoder = JSONDecoder()
-			// decoder.keyDecodingStrategy = .convertFromSnakeCase // if needed
 			let usersData = try decoder.decode([User].self, from: data)
 			
 			if usersData.isEmpty {
@@ -97,25 +96,38 @@ struct UserListView: View {
 		}
 	}
 	
+	func handleUserError(_ error: FetchUserError) {
+		switch error {
+		case .invalidUrl:
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: invalid url")
+		case .invalidResponse:
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: invalid response")
+		case .notFound:
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: users not found")
+		case .invalidData:
+			viewModel.showAlert = true
+			viewModel.isLoading = .failed
+			print("ERROR: invalid data")
+		}
+	}
+	
 	func loadData() async {
 		do {
 			try await fetchUsers()
 		} catch FetchUserError.invalidUrl {
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: invalid url")
+			handleUserError(FetchUserError.invalidUrl)
 		} catch FetchUserError.invalidResponse {
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: invalid response")
+			handleUserError(FetchUserError.invalidResponse)
 		} catch FetchUserError.notFound {
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: users not found")
+			handleUserError(FetchUserError.notFound)
 		} catch FetchUserError.invalidData {
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: invalid data")
+			handleUserError(FetchUserError.invalidData)
 		} catch {
 			viewModel.showAlert = true
 			viewModel.isLoading = .failed
