@@ -5,7 +5,8 @@ struct UserListView: View {
 	@Environment(\.modelContext) var modelContext
 	@Query var users: [User]
 	@State private var viewModel = ViewModel()
-	//	@State private var showAlert = false
+	@State private var alertError: FetchUserError?
+	//  @State private var showAlert = false
 	//	@State private var isLoading = LoadingState.loading
 	
 	var body: some View {
@@ -31,13 +32,28 @@ struct UserListView: View {
 						.padding(.vertical, 7)
 					}
 					.onDelete(perform: deleteItems)
+//					.onMove { indexSet, destination in
+//						users.move(fromOffsets: indexSet, toOffset: destination)
+//					}
 				}
 			} else if viewModel.isLoading != .loading {
 				EmptyUsersView(loadData: loadData)
 			}
 		}
-		.alert("Something went wrong", isPresented: $viewModel.showAlert) {} message: {
-			Text("Please make sure you're connected to the internet or try again later.")
+		.alert(alertError?.errorDescription ?? DEFAULT_ALERT_MESSAGE,
+					 isPresented: $viewModel.showAlert,
+					 presenting: alertError
+		) { error in
+			///MARK: Simple example of conditional alert
+			if error == .invalidUrl {
+				TextField("New URL", text: .constant(""))
+				
+				Button("Retry") { Task { await loadData() } }
+				
+				Button("Cancel", role: .cancel) { }
+			}
+		} message: { error in
+			Text(error.failureReason)
 		}
 		.task { await loadData() }
 		.overlay {
@@ -97,6 +113,7 @@ struct UserListView: View {
 	}
 	
 	func handleUserError(_ error: FetchUserError) {
+		alertError = error
 		switch error {
 		case .invalidUrl:
 			viewModel.showAlert = true
@@ -129,6 +146,7 @@ struct UserListView: View {
 		} catch FetchUserError.invalidData {
 			handleUserError(FetchUserError.invalidData)
 		} catch {
+			alertError = nil
 			viewModel.showAlert = true
 			viewModel.isLoading = .failed
 			print("Error loading users data: \(error.localizedDescription)")
@@ -138,4 +156,5 @@ struct UserListView: View {
 
 #Preview {
 	UserListView(filter: FILTER_OPTIONS.first!, sortOrder: [])
+		.preferredColorScheme(.dark)
 }

@@ -1,11 +1,38 @@
 import Foundation
 
+let DEFAULT_ALERT_MESSAGE = "Something went wrong"
 let BASE_URL = "https://www.hackingwithswift.com/samples/friendface.json"
 let SORT_OPTIONS = ["Name", "Date"]
 let FILTER_OPTIONS = ["All", "Active", "Inactive"]
 
-enum FetchUserError: Error {
+enum FetchUserError: LocalizedError {
 	case notFound, invalidUrl, invalidResponse, invalidData
+	
+	var errorDescription: String? {
+		switch self {
+		case .notFound:
+			"Users not found"
+		case .invalidUrl:
+			"Invalid URL"
+		case .invalidResponse:
+			"Invalid response"
+		case .invalidData:
+			"Invalid data"
+		}
+	}
+	
+	var failureReason: String {
+		switch self {
+		case .notFound:
+			"The list of Users could not be found."
+		case .invalidUrl:
+			"The URL provided was malformed."
+		case .invalidResponse:
+			"The server returned an invalid response."
+		case .invalidData:
+			"The data received from the server was invalid."
+		}
+	}
 }
 
 enum LoadingState {

@@ -15,10 +15,8 @@ struct EmptyUsersView: View {
 					await loadData()
 				}
 			}
-			.foregroundColor(.white)
-			.padding()
-			.background(.blue)
-			.clipShape(.capsule)
+			.buttonStyle(.borderedProminent)
+			.controlSize(.regular)
 		}
 		.offset(y: -60)
 	}

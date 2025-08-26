@@ -15,9 +15,7 @@ struct UserDetailView: View {
 				
 				Text("Address: \(user.address)")
 				
-				Text(
-					"Registered date: \(user.registered.formatted(date: .long, time: .omitted))"
-				)
+				Text("Registered date: \(user.registered.formatted(date: .long, time: .omitted))")
 				
 				Text(user.about)
 				
@@ -36,7 +34,7 @@ struct UserDetailView: View {
 			.padding()
 		}
 		.navigationTitle(user.name)
-		.navigationBarTitleDisplayMode(.large)
+		.navigationBarTitleDisplayMode(.inline)
 		.scrollBounceBehavior(.basedOnSize)
 	}
 }
