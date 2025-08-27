@@ -5,7 +5,6 @@ struct UserListView: View {
 	@Environment(\.modelContext) var modelContext
 	@Query var users: [User]
 	@State private var viewModel = ViewModel()
-	@State private var alertError: FetchUserError?
 	//  @State private var showAlert = false
 	//	@State private var isLoading = LoadingState.loading
 	
@@ -32,17 +31,18 @@ struct UserListView: View {
 						.padding(.vertical, 7)
 					}
 					.onDelete(perform: deleteItems)
-//					.onMove { indexSet, destination in
-//						users.move(fromOffsets: indexSet, toOffset: destination)
-//					}
+					//					.onMove { indexSet, destination in
+			    /// 					Need to use @State
+					//						users.move(fromOffsets: indexSet, toOffset: destination)
+					//					}
 				}
 			} else if viewModel.isLoading != .loading {
 				EmptyUsersView(loadData: loadData)
 			}
 		}
-		.alert(alertError?.errorDescription ?? DEFAULT_ALERT_MESSAGE,
+		.alert(viewModel.alertError?.errorDescription ?? DEFAULT_ALERT_MESSAGE,
 					 isPresented: $viewModel.showAlert,
-					 presenting: alertError
+					 presenting: viewModel.alertError
 		) { error in
 			///MARK: Simple example of conditional alert
 			if error == .invalidUrl {
@@ -113,24 +113,19 @@ struct UserListView: View {
 	}
 	
 	func handleUserError(_ error: FetchUserError) {
-		alertError = error
+		viewModel.alertError = error
+		viewModel.showAlert = true
+		viewModel.isLoading = .failed
+		
 		switch error {
 		case .invalidUrl:
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: invalid url")
+			print("ERROR: invalid url.")
 		case .invalidResponse:
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: invalid response")
+			print("ERROR: invalid response.")
 		case .notFound:
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: users not found")
+			print("ERROR: users not found.")
 		case .invalidData:
-			viewModel.showAlert = true
-			viewModel.isLoading = .failed
-			print("ERROR: invalid data")
+			print("ERROR: invalid data.")
 		}
 	}
 	
@@ -146,7 +141,7 @@ struct UserListView: View {
 		} catch FetchUserError.invalidData {
 			handleUserError(FetchUserError.invalidData)
 		} catch {
-			alertError = nil
+			viewModel.alertError = nil
 			viewModel.showAlert = true
 			viewModel.isLoading = .failed
 			print("Error loading users data: \(error.localizedDescription)")

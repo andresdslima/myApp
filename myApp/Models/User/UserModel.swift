@@ -7,7 +7,8 @@ final class Friend: Identifiable, Codable, Equatable {
 		case id, name
 	}
 	
-	@Attribute(.unique) var id: String
+	// @Attribute(.unique)
+	var id: String
 	var name: String
 	
 	init(id: String, name: String) {
@@ -38,7 +39,8 @@ final class User: Identifiable, Codable, Equatable {
 		case id, isActive, name, age, company, email, address, about, tags, friends, registered
 	}
 	
-	@Attribute(.unique) var id: String
+	// @Attribute(.unique)
+	var id: String
 	var isActive: Bool
 	var name: String
 	var age: Int

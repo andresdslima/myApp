@@ -46,11 +46,13 @@ extension UserListView {
 		var users: [User]
 		var showAlert: Bool
 		var isLoading: LoadingState
+		var alertError: FetchUserError?
 		
-		init(users: [User] = [], showAlert: Bool = false, isLoading: LoadingState = .loading) {
+		init(users: [User] = [], showAlert: Bool = false, isLoading: LoadingState = .loading, alertError: FetchUserError? = nil) {
 			self.users = users
 			self.showAlert = showAlert
 			self.isLoading = isLoading
+			self.alertError = alertError
 		}
 		
 		func deleteItems(at offsets: IndexSet) {
@@ -69,7 +71,7 @@ extension UserListView {
 			
 			///MARK: Example of HTTP POST request
 			//		guard let encoded = try? JSONEncoder().encode(payload) else {
-			//			print("Failed to encode")
+			//			print("ERROR: Failed to encode.")
 			//			return
 			//		}
 			//		var request = URLRequest(url: url)
@@ -101,22 +103,18 @@ extension UserListView {
 		}
 		
 		func handleUserError(_ error: FetchUserError) {
+			alertError = error
+			showAlert = true
+			isLoading = .failed
+			
 			switch error {
 			case .invalidUrl:
-				showAlert = true
-				isLoading = .failed
 				print("ERROR: invalid url")
 			case .invalidResponse:
-				showAlert = true
-				isLoading = .failed
 				print("ERROR: invalid response")
 			case .notFound:
-				showAlert = true
-				isLoading = .failed
 				print("ERROR: users not found")
 			case .invalidData:
-				showAlert = true
-				isLoading = .failed
 				print("ERROR: invalid data")
 			}
 		}
@@ -133,6 +131,7 @@ extension UserListView {
 			} catch FetchUserError.invalidData {
 				handleUserError(FetchUserError.invalidData)
 			} catch {
+				alertError = nil
 				showAlert = true
 				isLoading = .failed
 				print("Error loading users data: \(error.localizedDescription)")
